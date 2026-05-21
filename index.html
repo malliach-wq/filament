@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Filament Inventory</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
       --bg: #0f1117;
@@ -23,95 +24,20 @@
       --radius-sm: 8px;
       --shadow: 0 4px 24px rgba(0,0,0,0.4);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      min-height: 100vh;
-    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; min-height: 100vh; }
 
     /* ── Header ── */
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 18px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    header h1 {
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
+    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; }
+    header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
     header h1 span.icon { font-size: 1.5rem; }
-
     .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-
-    .search-wrap {
-      position: relative;
-    }
-
-    .search-wrap input {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      padding: 8px 14px 8px 36px;
-      font-size: 0.9rem;
-      width: 220px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
+    .search-wrap { position: relative; }
+    .search-wrap input { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 8px 14px 8px 36px; font-size: 0.9rem; width: 220px; outline: none; transition: border-color 0.2s; }
     .search-wrap input:focus { border-color: var(--accent); }
-    .search-wrap .search-icon {
-      position: absolute;
-      left: 11px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      pointer-events: none;
-    }
-
-    .filter-select {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      padding: 8px 12px;
-      font-size: 0.9rem;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 9px 18px;
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: background 0.2s, transform 0.1s;
-    }
-
+    .search-wrap .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; pointer-events: none; }
+    .filter-select { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 8px 12px; font-size: 0.9rem; outline: none; cursor: pointer; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: background 0.2s, transform 0.1s; }
     .btn:active { transform: scale(0.97); }
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-primary:hover { background: var(--accent-hover); }
@@ -122,22 +48,8 @@
     .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
 
     /* ── Stats bar ── */
-    .stats-bar {
-      display: flex;
-      gap: 14px;
-      padding: 18px 28px 0;
-      flex-wrap: wrap;
-    }
-
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 20px;
-      min-width: 130px;
-      flex: 1;
-    }
-
+    .stats-bar { display: flex; gap: 14px; padding: 18px 28px 0; flex-wrap: wrap; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; min-width: 130px; flex: 1; }
     .stat-card .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .stat-card .value { font-size: 1.55rem; font-weight: 700; }
     .stat-card .value.accent { color: var(--accent); }
@@ -145,336 +57,96 @@
     .stat-card .value.warning { color: var(--warning); }
 
     /* ── Main grid ── */
-    main {
-      padding: 20px 28px 40px;
-    }
+    main { padding: 20px 28px 40px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 18px; }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-      margin-top: 18px;
-    }
-
-    /* ── Spool card ── */
-    .spool-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .spool-card:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent), var(--shadow);
-    }
-
-    .spool-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: var(--card-color, var(--accent));
-    }
-
-    .card-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-
-    .color-swatch {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.15);
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    }
-
+    /* ── Filament card ── */
+    .spool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+    .spool-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+    .spool-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--card-color, var(--accent)); }
+    .card-top { display: flex; align-items: flex-start; gap: 12px; }
+    .color-swatch { width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.15); flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
     .card-info { flex: 1; min-width: 0; }
-
-    .card-brand {
-      font-size: 1rem;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .card-meta {
-      display: flex;
-      gap: 6px;
-      margin-top: 4px;
-      flex-wrap: wrap;
-    }
-
-    .tag {
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 99px;
-      background: var(--surface2);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
+    .card-brand { font-size: 1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-meta { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 99px; background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.4px; }
     .tag.material { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
-
-    .card-actions {
-      display: flex;
-      gap: 6px;
-      margin-left: auto;
-      flex-shrink: 0;
-    }
-
-    .icon-btn {
-      width: 30px;
-      height: 30px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
+    .tag.refill { background: rgba(78,204,163,0.15); color: var(--success); border-color: var(--success); }
+    .tag.with-spool { background: rgba(255,179,71,0.15); color: var(--warning); border-color: var(--warning); }
+    .card-actions { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
+    .icon-btn { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
     .icon-btn:hover { background: var(--surface2); color: var(--text); }
     .icon-btn.delete:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
 
     /* Weight bar */
-    .weight-section {}
-
-    .weight-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
+    .weight-labels { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; }
     .weight-labels .remaining { font-weight: 700; color: var(--text); font-size: 0.9rem; }
-
-    .weight-bar-bg {
-      height: 8px;
-      background: var(--surface2);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .weight-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 0.4s ease;
-      background: linear-gradient(90deg, var(--accent), var(--success));
-    }
-
+    .weight-bar-bg { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+    .weight-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; background: linear-gradient(90deg, var(--accent), var(--success)); }
     .weight-bar-fill.low { background: linear-gradient(90deg, var(--danger), var(--warning)); }
     .weight-bar-fill.medium { background: linear-gradient(90deg, var(--warning), var(--success)); }
 
-    .spool-note {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      background: var(--surface2);
-      border-radius: var(--radius-sm);
-      padding: 8px 10px;
-      line-height: 1.5;
-    }
+    .card-detail { font-size: 0.79rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px; }
+    .card-detail span { display: flex; gap: 5px; }
+    .card-detail .lbl { min-width: 64px; }
 
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .location-chip {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
+    .spool-note { font-size: 0.82rem; color: var(--text-muted); background: var(--surface2); border-radius: var(--radius-sm); padding: 8px 10px; line-height: 1.5; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); }
+    .location-chip { display: flex; align-items: center; gap: 5px; }
 
     /* ── Empty state ── */
-    .empty-state {
-      text-align: center;
-      padding: 80px 20px;
-      color: var(--text-muted);
-    }
-
+    .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); grid-column: 1/-1; }
     .empty-state .big-icon { font-size: 4rem; margin-bottom: 16px; }
     .empty-state h2 { font-size: 1.2rem; color: var(--text); margin-bottom: 8px; }
     .empty-state p { font-size: 0.9rem; margin-bottom: 24px; }
 
     /* ── Modal ── */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
-
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
-
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      width: 100%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: var(--shadow);
-      transform: scale(0.95);
-      transition: transform 0.2s;
-    }
-
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); transform: scale(0.95); transition: transform 0.2s; }
     .modal-overlay.open .modal { transform: scale(1); }
-
-    .modal-header {
-      padding: 20px 24px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
+    .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .modal-header h2 { font-size: 1.1rem; font-weight: 700; }
-
     .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
-
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
-
-    .field input,
-    .field select,
-    .field textarea {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      padding: 9px 12px;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-      font-family: inherit;
-    }
-
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus { border-color: var(--accent); }
-
+    .field input, .field select, .field textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 9px 12px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; font-family: inherit; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
     .field textarea { resize: vertical; min-height: 72px; }
+    .field input[type="color"] { padding: 4px 8px; height: 42px; cursor: pointer; }
+    .field input[type="date"] { color-scheme: dark; }
+    .color-row { display: grid; grid-template-columns: 60px 1fr 1fr; gap: 10px; align-items: flex-end; }
 
-    .field input[type="color"] {
-      padding: 4px 8px;
-      height: 42px;
-      cursor: pointer;
-    }
-
-    .color-row { display: flex; gap: 10px; align-items: flex-end; }
-    .color-row .field:first-child { flex: 0 0 60px; }
-    .color-row .field:last-child { flex: 1; }
-
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-    }
-
-    .toggle-row label { font-size: 0.88rem; color: var(--text); cursor: pointer; flex: 1; }
-
-    .toggle {
-      position: relative;
-      width: 40px;
-      height: 22px;
-      flex-shrink: 0;
-    }
-
-    .toggle input { opacity: 0; width: 0; height: 0; }
-
-    .slider {
-      position: absolute;
-      inset: 0;
-      background: var(--border);
-      border-radius: 99px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .slider::before {
-      content: '';
-      position: absolute;
-      height: 16px;
-      width: 16px;
-      left: 3px;
-      bottom: 3px;
-      background: white;
-      border-radius: 50%;
-      transition: transform 0.2s;
-    }
-
-    .toggle input:checked + .slider { background: var(--accent); }
-    .toggle input:checked + .slider::before { transform: translateX(18px); }
+    /* ── Import modal ── */
+    .import-drop { border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px 20px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+    .import-drop:hover, .import-drop.drag { border-color: var(--accent); background: var(--accent-soft); }
+    .import-drop input[type=file] { display: none; }
+    .import-drop .di { font-size: 2.5rem; margin-bottom: 8px; }
+    .import-preview { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: auto; max-height: 260px; margin-top: 12px; }
+    .import-preview table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    .import-preview th { background: var(--surface); padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+    .import-preview td { padding: 7px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .import-preview tr:last-child td { border-bottom: none; }
+    .import-info { font-size: 0.82rem; color: var(--text-muted); margin-top: 10px; }
+    .import-info strong { color: var(--text); }
 
     /* ── Toast ── */
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px 20px;
-      font-size: 0.88rem;
-      z-index: 999;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.25s, transform 0.25s;
-      pointer-events: none;
-      max-width: 320px;
-    }
-
+    #toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 20px; font-size: 0.88rem; z-index: 999; opacity: 0; transform: translateY(10px); transition: opacity 0.25s, transform 0.25s; pointer-events: none; max-width: 320px; }
     #toast.show { opacity: 1; transform: translateY(0); }
     #toast.success { border-color: var(--success); color: var(--success); }
     #toast.error { border-color: var(--danger); color: var(--danger); }
 
-    /* ── Responsive ── */
     @media (max-width: 600px) {
       header { padding: 14px 16px; }
       main { padding: 14px 16px 40px; }
       .stats-bar { padding: 14px 16px 0; }
-      .form-row { grid-template-columns: 1fr; }
-      .search-wrap input { width: 160px; }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+      .color-row { grid-template-columns: 56px 1fr; }
+      .color-row .field:last-child { grid-column: 1/-1; }
+      .search-wrap input { width: 140px; }
     }
   </style>
 </head>
@@ -485,12 +157,13 @@
   <div class="header-actions">
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input type="text" id="search" placeholder="Search spools…" oninput="renderGrid()" />
+      <input type="text" id="search" placeholder="Search filaments…" oninput="renderGrid()" />
     </div>
     <select class="filter-select" id="filterMaterial" onchange="renderGrid()">
       <option value="">All materials</option>
     </select>
-    <button class="btn btn-primary" onclick="openModal()">＋ Add Spool</button>
+    <button class="btn btn-ghost btn-sm" onclick="openImport()" title="Import Excel / CSV">⬆ Import</button>
+    <button class="btn btn-primary" onclick="openModal()">＋ Add Filament</button>
   </div>
 </header>
 
@@ -500,14 +173,15 @@
   <div class="grid" id="grid"></div>
 </main>
 
-<!-- Modal -->
+<!-- Add / Edit Modal -->
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
   <div class="modal">
     <div class="modal-header">
-      <h2 id="modalTitle">Add New Spool</h2>
+      <h2 id="modalTitle">Add Filament</h2>
       <button class="icon-btn" onclick="closeModal()" title="Close">✕</button>
     </div>
     <div class="modal-body">
+
       <div class="form-row">
         <div class="field">
           <label>Brand</label>
@@ -516,54 +190,60 @@
         <div class="field">
           <label>Material</label>
           <select id="fMaterial">
-            <option>PLA</option>
-            <option>PETG</option>
-            <option>ABS</option>
-            <option>ASA</option>
-            <option>TPU</option>
-            <option>Nylon (PA)</option>
-            <option>PC</option>
-            <option>PLA+</option>
-            <option>PETG-CF</option>
-            <option>PLA-CF</option>
-            <option>Resin</option>
-            <option>Other</option>
+            <option>PLA</option><option>PLA+</option><option>PETG</option><option>PETG-CF</option>
+            <option>ABS</option><option>ASA</option><option>TPU</option><option>Nylon (PA)</option>
+            <option>PC</option><option>PLA-CF</option><option>Resin</option><option>Other</option>
           </select>
         </div>
       </div>
 
-      <div class="color-row">
+      <div class="form-row">
         <div class="field">
-          <label>Color</label>
-          <input type="color" id="fColorPicker" value="#6c63ff" oninput="syncColorName()" />
+          <label>Purchase Type</label>
+          <select id="fPurchaseType">
+            <option value="with-spool">With Spool</option>
+            <option value="refill">Refill</option>
+          </select>
         </div>
         <div class="field">
-          <label>Color name</label>
+          <label>Date of Purchase</label>
+          <input type="date" id="fPurchaseDate" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Supplier</label>
+        <input type="text" id="fSupplier" placeholder="e.g. Amazon, Bambu Lab Store" />
+      </div>
+
+      <div class="color-row">
+        <div class="field">
+          <label>Colour</label>
+          <input type="color" id="fColorPicker" value="#6c63ff" oninput="onPickerChange()" />
+        </div>
+        <div class="field">
+          <label>Hex Code</label>
+          <input type="text" id="fHex" placeholder="#6c63ff" maxlength="7" oninput="onHexChange()" />
+        </div>
+        <div class="field">
+          <label>Colour Name</label>
           <input type="text" id="fColorName" placeholder="e.g. Galaxy Purple" />
         </div>
       </div>
 
       <div class="form-row">
         <div class="field">
-          <label>Remaining (g)</label>
-          <input type="number" id="fRemaining" placeholder="e.g. 800" min="0" step="1" />
+          <label>Weight (g)</label>
+          <input type="number" id="fWeight" placeholder="e.g. 1000" min="1" step="1" value="1000" />
         </div>
         <div class="field">
-          <label>Full weight (g)</label>
-          <input type="number" id="fFullWeight" placeholder="e.g. 1000" min="1" step="1" value="1000" />
+          <label>Approx. Remaining (g)</label>
+          <input type="number" id="fRemaining" placeholder="e.g. 800" min="0" step="1" />
         </div>
-      </div>
-
-      <div class="toggle-row">
-        <label for="fWithSpool">Weight includes spool</label>
-        <label class="toggle">
-          <input type="checkbox" id="fWithSpool" />
-          <span class="slider"></span>
-        </label>
       </div>
 
       <div class="field">
-        <label>Storage location</label>
+        <label>Storage Location</label>
         <input type="text" id="fLocation" placeholder="e.g. Shelf A, Dry box 2" />
       </div>
 
@@ -571,10 +251,39 @@
         <label>Notes</label>
         <textarea id="fNotes" placeholder="Drying status, print settings, anything…"></textarea>
       </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveSpool()">Save Spool</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveFilament()">Save Filament</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importOverlay" onclick="handleImportOverlayClick(event)">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <h2>Import Filaments</h2>
+      <button class="icon-btn" onclick="closeImport()" title="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="import-drop" id="importDrop" onclick="document.getElementById('importFile').click()">
+        <input type="file" id="importFile" accept=".xlsx,.xls,.csv" onchange="handleImportFile(event)" />
+        <div class="di">📂</div>
+        <div style="font-weight:600;margin-bottom:4px">Drop Excel or CSV file here</div>
+        <div style="font-size:0.82rem;color:var(--text-muted)">Accepted: .xlsx, .xls, .csv</div>
+      </div>
+      <div class="import-info" id="importInfo" style="display:none"></div>
+      <div class="import-preview" id="importPreview" style="display:none"></div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:12px">
+        Expected columns (any order, header row required):<br/>
+        <code style="color:var(--accent)">Brand, Material, Colour Name, Hex, Weight, Remaining, Purchase Type, Supplier, Date of Purchase, Location, Notes</code>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeImport()">Cancel</button>
+      <button class="btn btn-primary" id="importBtn" onclick="confirmImport()" disabled>Import</button>
     </div>
   </div>
 </div>
@@ -583,255 +292,332 @@
 <div id="toast"></div>
 
 <script>
-  // ── Storage ──────────────────────────────────────────────
-  const STORAGE_KEY = 'filament_inventory_v1';
+// ── Storage ──────────────────────────────────────────────
+const STORAGE_KEY = 'filament_inventory_v2';
 
-  function load() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch { return []; }
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function save(items) { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+
+let items = load();
+let editingId = null;
+let pendingImport = [];
+
+// ── Helpers ───────────────────────────────────────────────
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function pct(remaining, weight) { if (!weight || weight <= 0) return 0; return Math.min(100, Math.max(0, Math.round((remaining / weight) * 100))); }
+function barClass(p) { if (p <= 25) return 'low'; if (p <= 60) return 'medium'; return ''; }
+function escHtml(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d) { if (!d) return ''; try { return new Date(d).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}); } catch { return d; } }
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+// ── Colour sync ───────────────────────────────────────────
+function onPickerChange() {
+  const hex = document.getElementById('fColorPicker').value;
+  document.getElementById('fHex').value = hex;
+}
+function onHexChange() {
+  let hex = document.getElementById('fHex').value.trim();
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    document.getElementById('fColorPicker').value = hex;
   }
+}
 
-  function save(spools) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(spools));
+// ── Stats ─────────────────────────────────────────────────
+function renderStats() {
+  const total = items.length;
+  const totalGrams = items.reduce((s, f) => s + (Number(f.remaining) || 0), 0);
+  const materials = [...new Set(items.map(f => f.material))].length;
+  const low = items.filter(f => pct(Number(f.remaining)||0, Number(f.weight)||1000) <= 25).length;
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card"><div class="label">Filaments</div><div class="value accent">${total}</div></div>
+    <div class="stat-card"><div class="label">Total remaining</div><div class="value success">${totalGrams>=1000?(totalGrams/1000).toFixed(2)+' kg':totalGrams+' g'}</div></div>
+    <div class="stat-card"><div class="label">Materials</div><div class="value">${materials}</div></div>
+    <div class="stat-card"><div class="label">Running low</div><div class="value ${low>0?'warning':''}">${low}</div></div>`;
+}
+
+function updateMaterialFilter() {
+  const sel = document.getElementById('filterMaterial');
+  const current = sel.value;
+  const mats = [...new Set(items.map(f => f.material))].sort();
+  sel.innerHTML = '<option value="">All materials</option>' +
+    mats.map(m => `<option value="${escHtml(m)}" ${m===current?'selected':''}>${escHtml(m)}</option>`).join('');
+}
+
+// ── Grid render ───────────────────────────────────────────
+function renderGrid() {
+  const query = document.getElementById('search').value.toLowerCase();
+  const matFilter = document.getElementById('filterMaterial').value;
+  let filtered = items.filter(f => {
+    const hay = [f.brand,f.material,f.colorName,f.supplier,f.location,f.notes].join(' ').toLowerCase();
+    return (!query || hay.includes(query)) && (!matFilter || f.material === matFilter);
+  });
+  renderStats();
+  updateMaterialFilter();
+  const grid = document.getElementById('grid');
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="big-icon">🧵</div><h2>${items.length===0?'No filaments yet':'No matches'}</h2><p>${items.length===0?'Add your first filament to get started.':'Try adjusting your search or filter.'}</p>${items.length===0?'<button class="btn btn-primary" onclick="openModal()">＋ Add Filament</button>':''}</div>`;
+    return;
   }
-
-  let spools = load();
-  let editingId = null;
-
-  // ── Helpers ───────────────────────────────────────────────
-  function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2);
-  }
-
-  function pct(remaining, full) {
-    if (!full || full <= 0) return 0;
-    return Math.min(100, Math.max(0, Math.round((remaining / full) * 100)));
-  }
-
-  function barClass(p) {
-    if (p <= 25) return 'low';
-    if (p <= 60) return 'medium';
-    return '';
-  }
-
-  function escHtml(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function toast(msg, type = 'success') {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.className = 'show ' + type;
-    clearTimeout(el._t);
-    el._t = setTimeout(() => { el.className = ''; }, 2800);
-  }
-
-  // ── Stats ─────────────────────────────────────────────────
-  function renderStats() {
-    const totalSpools = spools.length;
-    const totalGrams = spools.reduce((s, sp) => s + (Number(sp.remaining) || 0), 0);
-    const materials = [...new Set(spools.map(sp => sp.material))].length;
-    const low = spools.filter(sp => {
-      const p = pct(Number(sp.remaining) || 0, Number(sp.fullWeight) || 1000);
-      return p <= 25;
-    }).length;
-
-    document.getElementById('statsBar').innerHTML = `
-      <div class="stat-card">
-        <div class="label">Total spools</div>
-        <div class="value accent">${totalSpools}</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Total filament</div>
-        <div class="value success">${totalGrams >= 1000 ? (totalGrams / 1000).toFixed(2) + ' kg' : totalGrams + ' g'}</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Materials</div>
-        <div class="value">${materials}</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Running low</div>
-        <div class="value ${low > 0 ? 'warning' : ''}">${low}</div>
-      </div>
-    `;
-  }
-
-  // ── Filter selects ────────────────────────────────────────
-  function updateMaterialFilter() {
-    const sel = document.getElementById('filterMaterial');
-    const current = sel.value;
-    const materials = [...new Set(spools.map(s => s.material))].sort();
-    sel.innerHTML = '<option value="">All materials</option>' +
-      materials.map(m => `<option value="${escHtml(m)}" ${m === current ? 'selected' : ''}>${escHtml(m)}</option>`).join('');
-  }
-
-  // ── Grid render ───────────────────────────────────────────
-  function renderGrid() {
-    const query = document.getElementById('search').value.toLowerCase();
-    const matFilter = document.getElementById('filterMaterial').value;
-
-    let filtered = spools.filter(sp => {
-      const hay = [sp.brand, sp.material, sp.colorName, sp.location, sp.notes].join(' ').toLowerCase();
-      return (!query || hay.includes(query)) && (!matFilter || sp.material === matFilter);
-    });
-
-    renderStats();
-    updateMaterialFilter();
-
-    const grid = document.getElementById('grid');
-
-    if (filtered.length === 0) {
-      grid.innerHTML = `
-        <div class="empty-state" style="grid-column:1/-1">
-          <div class="big-icon">🪣</div>
-          <h2>${spools.length === 0 ? 'No spools yet' : 'No matches found'}</h2>
-          <p>${spools.length === 0 ? 'Add your first filament spool to get started.' : 'Try adjusting your search or filter.'}</p>
-          ${spools.length === 0 ? '<button class="btn btn-primary" onclick="openModal()">＋ Add Spool</button>' : ''}
-        </div>`;
-      return;
-    }
-
-    grid.innerHTML = filtered.map(sp => {
-      const remaining = Number(sp.remaining) || 0;
-      const fullWeight = Number(sp.fullWeight) || 1000;
-      const p = pct(remaining, fullWeight);
-      const bc = barClass(p);
-      const color = sp.color || '#6c63ff';
-
-      return `
-        <div class="spool-card" style="--card-color:${color}">
-          <div class="card-top">
-            <div class="color-swatch" style="background:${color}" title="${escHtml(sp.colorName)}"></div>
-            <div class="card-info">
-              <div class="card-brand">${escHtml(sp.brand || 'Unknown brand')}</div>
-              <div class="card-meta">
-                <span class="tag material">${escHtml(sp.material)}</span>
-                ${sp.colorName ? `<span class="tag">${escHtml(sp.colorName)}</span>` : ''}
-                ${sp.withSpool ? '<span class="tag">w/ spool</span>' : '<span class="tag">filament only</span>'}
-              </div>
-            </div>
-            <div class="card-actions">
-              <button class="icon-btn" onclick="editSpool('${sp.id}')" title="Edit">✏️</button>
-              <button class="icon-btn delete" onclick="deleteSpool('${sp.id}')" title="Delete">🗑️</button>
+  grid.innerHTML = filtered.map(f => {
+    const remaining = Number(f.remaining) || 0;
+    const weight = Number(f.weight) || 1000;
+    const p = pct(remaining, weight);
+    const bc = barClass(p);
+    const color = f.color || '#6c63ff';
+    const ptag = f.purchaseType === 'refill'
+      ? '<span class="tag refill">Refill</span>'
+      : '<span class="tag with-spool">With Spool</span>';
+    return `
+      <div class="spool-card" style="--card-color:${color}">
+        <div class="card-top">
+          <div class="color-swatch" style="background:${color}" title="${escHtml(f.colorName||color)}"></div>
+          <div class="card-info">
+            <div class="card-brand">${escHtml(f.brand||'Unknown brand')}</div>
+            <div class="card-meta">
+              <span class="tag material">${escHtml(f.material)}</span>
+              ${f.colorName?`<span class="tag">${escHtml(f.colorName)}</span>`:''}
+              ${ptag}
             </div>
           </div>
-
-          <div class="weight-section">
-            <div class="weight-labels">
-              <span class="remaining">${remaining}g remaining</span>
-              <span>${p}% of ${fullWeight}g</span>
-            </div>
-            <div class="weight-bar-bg">
-              <div class="weight-bar-fill ${bc}" style="width:${p}%"></div>
-            </div>
+          <div class="card-actions">
+            <button class="icon-btn" onclick="editFilament('${f.id}')" title="Edit">✏️</button>
+            <button class="icon-btn delete" onclick="deleteFilament('${f.id}')" title="Delete">🗑️</button>
           </div>
-
-          ${sp.notes ? `<div class="spool-note">${escHtml(sp.notes)}</div>` : ''}
-
-          <div class="card-footer">
-            ${sp.location
-              ? `<span class="location-chip">📦 ${escHtml(sp.location)}</span>`
-              : '<span></span>'
-            }
-            <span>${p <= 25 ? '⚠️ Running low' : p >= 90 ? '✅ Full' : ''}</span>
+        </div>
+        <div class="weight-section">
+          <div class="weight-labels">
+            <span class="remaining">~${remaining}g remaining</span>
+            <span>${p}% of ${weight}g</span>
           </div>
-        </div>`;
-    }).join('');
+          <div class="weight-bar-bg"><div class="weight-bar-fill ${bc}" style="width:${p}%"></div></div>
+        </div>
+        ${(f.supplier||f.purchaseDate)?`
+        <div class="card-detail">
+          ${f.supplier?`<span><span class="lbl">🏪 Supplier</span>${escHtml(f.supplier)}</span>`:''}
+          ${f.purchaseDate?`<span><span class="lbl">📅 Purchased</span>${fmtDate(f.purchaseDate)}</span>`:''}
+        </div>`:''}
+        ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
+        <div class="card-footer">
+          ${f.location?`<span class="location-chip">📦 ${escHtml(f.location)}</span>`:'<span></span>'}
+          <span>${p<=25?'⚠️ Running low':p>=90?'✅ Full':''}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Modal ─────────────────────────────────────────────────
+function openModal(f = null) {
+  editingId = f ? f.id : null;
+  document.getElementById('modalTitle').textContent = f ? 'Edit Filament' : 'Add Filament';
+  document.getElementById('saveBtn').textContent = f ? 'Save Changes' : 'Save Filament';
+  const color = f?.color ?? '#6c63ff';
+  document.getElementById('fBrand').value        = f?.brand        ?? '';
+  document.getElementById('fMaterial').value     = f?.material     ?? 'PLA';
+  document.getElementById('fPurchaseType').value = f?.purchaseType ?? 'with-spool';
+  document.getElementById('fPurchaseDate').value = f?.purchaseDate ?? '';
+  document.getElementById('fSupplier').value     = f?.supplier     ?? '';
+  document.getElementById('fColorPicker').value  = color;
+  document.getElementById('fHex').value          = color;
+  document.getElementById('fColorName').value    = f?.colorName    ?? '';
+  document.getElementById('fWeight').value       = f?.weight       ?? 1000;
+  document.getElementById('fRemaining').value    = f?.remaining    ?? '';
+  document.getElementById('fLocation').value     = f?.location     ?? '';
+  document.getElementById('fNotes').value        = f?.notes        ?? '';
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('fBrand').focus(), 50);
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); editingId = null; }
+function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+function saveFilament() {
+  const brand        = document.getElementById('fBrand').value.trim();
+  const material     = document.getElementById('fMaterial').value;
+  const purchaseType = document.getElementById('fPurchaseType').value;
+  const purchaseDate = document.getElementById('fPurchaseDate').value;
+  const supplier     = document.getElementById('fSupplier').value.trim();
+  const color        = document.getElementById('fColorPicker').value;
+  const colorName    = document.getElementById('fColorName').value.trim();
+  const weight       = parseFloat(document.getElementById('fWeight').value);
+  const remaining    = parseFloat(document.getElementById('fRemaining').value);
+  const location     = document.getElementById('fLocation').value.trim();
+  const notes        = document.getElementById('fNotes').value.trim();
+
+  if (!brand) { toast('Please enter a brand name.', 'error'); return; }
+  if (isNaN(weight) || weight <= 0) { toast('Enter a valid weight.', 'error'); return; }
+  if (isNaN(remaining) || remaining < 0) { toast('Enter a valid remaining weight.', 'error'); return; }
+
+  const data = { brand, material, purchaseType, purchaseDate, supplier, color, colorName, weight, remaining, location, notes };
+  if (editingId) {
+    const idx = items.findIndex(f => f.id === editingId);
+    if (idx !== -1) { items[idx] = { ...items[idx], ...data }; toast('Filament updated! ✅'); }
+  } else {
+    items.unshift({ id: uid(), createdAt: Date.now(), ...data });
+    toast('Filament added! 🧵');
   }
+  save(items); closeModal(); renderGrid();
+}
 
-  // ── Modal ─────────────────────────────────────────────────
-  function openModal(spool = null) {
-    editingId = spool ? spool.id : null;
-    document.getElementById('modalTitle').textContent = spool ? 'Edit Spool' : 'Add New Spool';
+function editFilament(id) { const f = items.find(f => f.id === id); if (f) openModal(f); }
 
-    document.getElementById('fBrand').value      = spool?.brand      ?? '';
-    document.getElementById('fMaterial').value   = spool?.material   ?? 'PLA';
-    document.getElementById('fColorPicker').value = spool?.color     ?? '#6c63ff';
-    document.getElementById('fColorName').value  = spool?.colorName  ?? '';
-    document.getElementById('fRemaining').value  = spool?.remaining  ?? '';
-    document.getElementById('fFullWeight').value = spool?.fullWeight ?? 1000;
-    document.getElementById('fWithSpool').checked = spool?.withSpool ?? false;
-    document.getElementById('fLocation').value   = spool?.location   ?? '';
-    document.getElementById('fNotes').value      = spool?.notes      ?? '';
+function deleteFilament(id) {
+  const f = items.find(f => f.id === id);
+  if (!f) return;
+  if (!confirm(`Delete "${f.brand} ${f.material}"? This cannot be undone.`)) return;
+  items = items.filter(f => f.id !== id);
+  save(items); toast('Filament deleted.', 'error'); renderGrid();
+}
 
-    document.getElementById('modalOverlay').classList.add('open');
-    setTimeout(() => document.getElementById('fBrand').focus(), 50);
-  }
+// ── Import ────────────────────────────────────────────────
+function openImport() {
+  pendingImport = [];
+  document.getElementById('importInfo').style.display = 'none';
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importBtn').disabled = true;
+  document.getElementById('importFile').value = '';
+  document.getElementById('importOverlay').classList.add('open');
+  const dz = document.getElementById('importDrop');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag');
+    if (e.dataTransfer.files[0]) handleImportFile({ target: { files: e.dataTransfer.files } });
+  });
+}
 
-  function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('open');
-    editingId = null;
-  }
+function closeImport() { document.getElementById('importOverlay').classList.remove('open'); }
+function handleImportOverlayClick(e) { if (e.target === document.getElementById('importOverlay')) closeImport(); }
 
-  function handleOverlayClick(e) {
-    if (e.target === document.getElementById('modalOverlay')) closeModal();
-  }
+function handleImportFile(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      if (!rows.length) { toast('No data found in file.', 'error'); return; }
+      parseImportRows(rows);
+    } catch(err) { toast('Could not read file: ' + err.message, 'error'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
 
-  function syncColorName() {
-    // optional: user can still type their own name
-  }
+const COL_MAP = {
+  brand: ['brand','make','manufacturer'],
+  material: ['material','type','filament type'],
+  colorName: ['colour name','color name','colour','color','name'],
+  color: ['hex','hex code','colour hex','color hex'],
+  weight: ['weight','weight (g)','full weight','total weight','spool weight'],
+  remaining: ['remaining','remaining (g)','approx remaining','left','amount left'],
+  purchaseType: ['purchase type','type','with spool','refill'],
+  supplier: ['supplier','vendor','store','source'],
+  purchaseDate: ['date of purchase','purchase date','date','bought'],
+  location: ['location','storage','storage location','shelf'],
+  notes: ['notes','note','comments','comment']
+};
 
-  function saveSpool() {
-    const brand     = document.getElementById('fBrand').value.trim();
-    const material  = document.getElementById('fMaterial').value;
-    const color     = document.getElementById('fColorPicker').value;
-    const colorName = document.getElementById('fColorName').value.trim();
-    const remaining = parseFloat(document.getElementById('fRemaining').value);
-    const fullWeight = parseFloat(document.getElementById('fFullWeight').value);
-    const withSpool = document.getElementById('fWithSpool').checked;
-    const location  = document.getElementById('fLocation').value.trim();
-    const notes     = document.getElementById('fNotes').value.trim();
-
-    if (!brand) { toast('Please enter a brand name.', 'error'); return; }
-    if (isNaN(remaining) || remaining < 0) { toast('Enter a valid remaining weight.', 'error'); return; }
-    if (isNaN(fullWeight) || fullWeight <= 0) { toast('Enter a valid full spool weight.', 'error'); return; }
-
-    if (editingId) {
-      const idx = spools.findIndex(s => s.id === editingId);
-      if (idx !== -1) {
-        spools[idx] = { ...spools[idx], brand, material, color, colorName, remaining, fullWeight, withSpool, location, notes };
-        toast('Spool updated! ✅');
-      }
-    } else {
-      spools.unshift({ id: uid(), brand, material, color, colorName, remaining, fullWeight, withSpool, location, notes, createdAt: Date.now() });
-      toast('Spool added! 🧵');
+function parseImportRows(rows) {
+  const headers = Object.keys(rows[0]).map(h => h.toLowerCase().trim());
+  function findCol(key) {
+    for (const alias of COL_MAP[key]) {
+      const idx = headers.indexOf(alias);
+      if (idx !== -1) return Object.keys(rows[0])[idx];
     }
-
-    save(spools);
-    closeModal();
-    renderGrid();
+    return null;
   }
+  const cols = {};
+  for (const key of Object.keys(COL_MAP)) cols[key] = findCol(key);
 
-  // ── Edit / Delete ─────────────────────────────────────────
-  function editSpool(id) {
-    const spool = spools.find(s => s.id === id);
-    if (spool) openModal(spool);
-  }
-
-  function deleteSpool(id) {
-    const spool = spools.find(s => s.id === id);
-    if (!spool) return;
-    if (!confirm(`Delete "${spool.brand} ${spool.material}" spool? This cannot be undone.`)) return;
-    spools = spools.filter(s => s.id !== id);
-    save(spools);
-    toast('Spool deleted.', 'error');
-    renderGrid();
-  }
-
-  // ── Keyboard ──────────────────────────────────────────────
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      if (document.getElementById('modalOverlay').classList.contains('open')) saveSpool();
+  pendingImport = rows.map(row => {
+    const get = key => cols[key] ? String(row[cols[key]] ?? '').trim() : '';
+    const color = get('color') || '#6c63ff';
+    const hex = /^#?[0-9a-fA-F]{6}$/.test(color) ? (color.startsWith('#') ? color : '#'+color) : '#6c63ff';
+    const pt = get('purchaseType').toLowerCase();
+    const purchaseType = pt.includes('refill') ? 'refill' : 'with-spool';
+    let purchaseDate = get('purchaseDate');
+    // Normalise date: if it's a JS date object serialised, convert
+    if (purchaseDate && !isNaN(Date.parse(purchaseDate))) {
+      purchaseDate = new Date(purchaseDate).toISOString().split('T')[0];
     }
+    return {
+      id: uid(), createdAt: Date.now(),
+      brand: get('brand') || 'Unknown',
+      material: get('material') || 'PLA',
+      colorName: get('colorName'),
+      color: hex,
+      weight: parseFloat(get('weight')) || 1000,
+      remaining: parseFloat(get('remaining')) || 0,
+      purchaseType,
+      supplier: get('supplier'),
+      purchaseDate,
+      location: get('location'),
+      notes: get('notes')
+    };
   });
 
-  // ── Init ──────────────────────────────────────────────────
+  // Preview table
+  const preview = pendingImport.slice(0, 8);
+  document.getElementById('importPreview').style.display = '';
+  document.getElementById('importPreview').innerHTML = `<table>
+    <thead><tr><th>Brand</th><th>Material</th><th>Colour</th><th>Weight</th><th>Remaining</th><th>Type</th><th>Supplier</th><th>Date</th></tr></thead>
+    <tbody>${preview.map(f => `<tr>
+      <td>${escHtml(f.brand)}</td>
+      <td>${escHtml(f.material)}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:50%;background:${f.color};display:inline-block;border:1px solid rgba(255,255,255,0.2)"></span>${escHtml(f.colorName||f.color)}</span></td>
+      <td>${f.weight}g</td>
+      <td>${f.remaining}g</td>
+      <td>${f.purchaseType==='refill'?'Refill':'With Spool'}</td>
+      <td>${escHtml(f.supplier)}</td>
+      <td>${fmtDate(f.purchaseDate)}</td>
+    </tr>`).join('')}
+    ${pendingImport.length>8?`<tr><td colspan="8" style="text-align:center;color:var(--text-muted);font-style:italic">…and ${pendingImport.length-8} more rows</td></tr>`:''}</tbody>
+  </table>`;
+  document.getElementById('importInfo').style.display = '';
+  document.getElementById('importInfo').innerHTML = `Ready to import <strong>${pendingImport.length}</strong> filament${pendingImport.length!==1?'s':''}. Existing data will not be changed.`;
+  document.getElementById('importBtn').disabled = false;
+}
+
+function confirmImport() {
+  if (!pendingImport.length) return;
+  const existingIds = new Set(items.map(f => f.brand + '|' + f.material + '|' + f.colorName));
+  let added = 0, skipped = 0;
+  for (const f of pendingImport) {
+    const key = f.brand + '|' + f.material + '|' + f.colorName;
+    if (existingIds.has(key)) { skipped++; continue; }
+    items.unshift(f);
+    existingIds.add(key);
+    added++;
+  }
+  save(items);
+  closeImport();
   renderGrid();
+  toast(`Imported ${added} filament${added!==1?'s':''}${skipped?` (${skipped} duplicates skipped)`:''}. 🧵`);
+}
+
+// ── Keyboard ──────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeImport(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==='Enter') {
+    if (document.getElementById('modalOverlay').classList.contains('open')) saveFilament();
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────
+renderGrid();
 </script>
 </body>
 </html>
