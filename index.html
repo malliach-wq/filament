@@ -294,6 +294,10 @@
       <div class="import-info" id="importInfo" style="display:none"></div>
       <div class="import-preview" id="importPreview" style="display:none"></div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:12px">
+        <div style="margin-bottom:12px">
+          <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()" style="font-size:0.8rem;">⬇ Download Template (.xlsx)</button>
+          <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px;">Pre-formatted with all columns</span>
+        </div>
         Expected columns (any order, header row required):<br/>
         <code style="color:var(--accent)">Brand, Material, Colour Name, Hex, Weight, Remaining, Purchase Type, Supplier, Date of Purchase, Location, Notes</code>
       </div>
@@ -623,6 +627,33 @@ function confirmImport() {
   closeImport();
   renderGrid();
   toast(`Imported ${added} filament${added!==1?'s':''}${skipped?` (${skipped} duplicates skipped)`:''}. 🧵`);
+}
+
+// ── Template Download ────────────────────────────────────
+function downloadTemplate() {
+  if (typeof XLSX === 'undefined') { toast('SheetJS not loaded yet — try again in a moment.', 'error'); return; }
+  const headers = [
+    'Brand', 'Material', 'Purchase Type', 'Date of Purchase',
+    'Supplier', 'Colour Name', 'Colour Hex', 'Weight (g)',
+    'Approx. Remaining (g)', 'Storage Location', 'Notes'
+  ];
+  const example = [
+    'Bambu Lab', 'PLA', 'With Spool', '2024-01-15',
+    'Bambu Lab Store', 'Jade Green', '#4CAF50', '1000',
+    '850', 'Shelf A', 'Standard PLA, good adhesion'
+  ];
+  const ws = XLSX.utils.aoa_to_sheet([headers, example]);
+  // Column widths
+  ws['!cols'] = headers.map(h => ({ wch: Math.max(h.length + 4, 14) }));
+  // Style header row bold (basic)
+  headers.forEach((_, i) => {
+    const cell = XLSX.utils.encode_cell({ r: 0, c: i });
+    if (ws[cell]) ws[cell].s = { font: { bold: true } };
+  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Filament Inventory');
+  XLSX.writeFile(wb, 'filament_import_template.xlsx');
+  toast('Template downloaded! 📥');
 }
 
 // ── Keyboard ──────────────────────────────────────────────
