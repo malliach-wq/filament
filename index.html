@@ -139,6 +139,19 @@
     #toast.success { border-color: var(--success); color: var(--success); }
     #toast.error { border-color: var(--danger); color: var(--danger); }
 
+
+    /* ── Admin panel ── */
+    .admin-section { margin-bottom: 28px; }
+    .admin-section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .danger-zone { border: 1px solid var(--danger); border-radius: var(--radius); padding: 18px 20px; background: var(--danger-soft); }
+    .danger-zone h3 { font-size: 0.95rem; font-weight: 700; color: var(--danger); margin-bottom: 6px; display:flex; align-items:center; gap:8px; }
+    .danger-zone p { font-size: 0.84rem; color: var(--text-muted); margin-bottom: 14px; }
+    .purge-confirm-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-top: 12px; display:none; flex-direction:column; gap:10px; }
+    .purge-confirm-box.visible { display: flex; }
+    .purge-confirm-box label { font-size: 0.82rem; font-weight: 600; color: var(--danger); }
+    .purge-confirm-box input { background: var(--surface); border: 1px solid var(--danger); border-radius: var(--radius-sm); color: var(--text); padding: 8px 12px; font-size: 0.9rem; outline: none; font-family: monospace; }
+    .purge-confirm-box input:focus { box-shadow: 0 0 0 2px rgba(255,92,108,0.3); }
+
     @media (max-width: 600px) {
       header { padding: 14px 16px; }
       main { padding: 14px 16px 40px; }
@@ -179,7 +192,7 @@
     <select class="filter-select" id="filterMaterial" onchange="renderGrid()">
       <option value="">All materials</option>
     </select>
-    <button class="btn btn-ghost btn-sm" onclick="openImport()" title="Import Excel / CSV">⬆ Import</button>
+    <button class="btn btn-ghost btn-sm" onclick="openAdmin()" title="Admin panel">⚙ Admin</button>
     <button class="btn btn-primary" onclick="openModal()">＋ Add Filament</button>
   </div>
 </header>
@@ -277,34 +290,57 @@
   </div>
 </div>
 
-<!-- Import Modal -->
-<div class="modal-overlay" id="importOverlay" onclick="handleImportOverlayClick(event)">
+<!-- Admin Modal -->
+<div class="modal-overlay" id="adminOverlay" onclick="handleAdminOverlayClick(event)">
   <div class="modal" style="max-width:680px">
     <div class="modal-header">
-      <h2>Import Filaments</h2>
-      <button class="icon-btn" onclick="closeImport()" title="Close">✕</button>
+      <h2>⚙ Admin</h2>
+      <button class="icon-btn" onclick="closeAdmin()" title="Close">✕</button>
     </div>
     <div class="modal-body">
-      <div class="import-drop" id="importDrop" onclick="document.getElementById('importFile').click()">
-        <input type="file" id="importFile" accept=".xlsx,.xls,.csv" onchange="handleImportFile(event)" />
-        <div class="di">📂</div>
-        <div style="font-weight:600;margin-bottom:4px">Drop Excel or CSV file here</div>
-        <div style="font-size:0.82rem;color:var(--text-muted)">Accepted: .xlsx, .xls, .csv</div>
-      </div>
-      <div class="import-info" id="importInfo" style="display:none"></div>
-      <div class="import-preview" id="importPreview" style="display:none"></div>
-      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:12px">
-        <div style="margin-bottom:12px">
-          <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()" style="font-size:0.8rem;">⬇ Download Template (.xlsx)</button>
-          <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px;">Pre-formatted with all columns</span>
+
+      <!-- Import section -->
+      <div class="admin-section">
+        <div class="admin-section-title">📂 Import Filaments</div>
+        <div class="import-drop" id="importDrop" onclick="document.getElementById('importFile').click()">
+          <input type="file" id="importFile" accept=".xlsx,.xls,.csv" onchange="handleImportFile(event)" />
+          <div class="di">📂</div>
+          <div style="font-weight:600;margin-bottom:4px">Drop Excel or CSV file here</div>
+          <div style="font-size:0.82rem;color:var(--text-muted)">Accepted: .xlsx, .xls, .csv</div>
         </div>
-        Expected columns (any order, header row required):<br/>
-        <code style="color:var(--accent)">Brand, Material, Colour Name, Hex, Weight, Remaining, Purchase Type, Supplier, Date of Purchase, Location, Notes</code>
+        <div class="import-info" id="importInfo" style="display:none"></div>
+        <div class="import-preview" id="importPreview" style="display:none"></div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:12px">
+          <div style="margin-bottom:12px">
+            <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()" style="font-size:0.8rem;">⬇ Download Template (.xlsx)</button>
+            <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px;">Pre-formatted with all columns</span>
+          </div>
+          Expected columns (any order, header row required):<br/>
+          <code style="color:var(--accent)">Brand, Material, Colour Name, Hex, Weight, Remaining, Purchase Type, Supplier, Date of Purchase, Location, Notes</code>
+        </div>
+        <div style="margin-top:14px;display:flex;justify-content:flex-end">
+          <button class="btn btn-primary btn-sm" id="importBtn" onclick="confirmImport()" disabled>⬆ Import</button>
+        </div>
       </div>
+
+      <!-- Danger zone -->
+      <div class="admin-section" style="margin-bottom:0">
+        <div class="admin-section-title">⚠ Danger Zone</div>
+        <div class="danger-zone">
+          <h3>🔥 Purge Database</h3>
+          <p>Permanently deletes <strong>all filament records</strong> from this device. This cannot be undone.</p>
+          <button class="btn btn-danger btn-sm" onclick="startPurge()">🔥 Purge All Data…</button>
+          <div class="purge-confirm-box" id="purgeConfirmBox">
+            <label>Step 1 — Type <code style="background:rgba(255,92,108,0.2);padding:2px 6px;border-radius:4px">PURGE</code> to confirm:</label>
+            <input type="text" id="purgeInput" placeholder="Type PURGE" oninput="onPurgeType()" autocomplete="off" spellcheck="false" />
+            <button class="btn btn-danger btn-sm" id="purgeConfirmBtn" onclick="executePurge()" disabled>Step 2 — Confirm &amp; Delete Everything</button>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeImport()">Cancel</button>
-      <button class="btn btn-primary" id="importBtn" onclick="confirmImport()" disabled>Import</button>
+      <button class="btn btn-ghost" onclick="closeAdmin()">Close</button>
     </div>
   </div>
 </div>
@@ -501,14 +537,17 @@ function deleteFilament(id) {
   save(items); toast('Filament deleted.', 'error'); renderGrid();
 }
 
-// ── Import ────────────────────────────────────────────────
-function openImport() {
+// ── Admin panel ───────────────────────────────────────────
+function openAdmin() {
   pendingImport = [];
   document.getElementById('importInfo').style.display = 'none';
   document.getElementById('importPreview').style.display = 'none';
   document.getElementById('importBtn').disabled = true;
   document.getElementById('importFile').value = '';
-  document.getElementById('importOverlay').classList.add('open');
+  document.getElementById('purgeConfirmBox').classList.remove('visible');
+  document.getElementById('purgeInput').value = '';
+  document.getElementById('purgeConfirmBtn').disabled = true;
+  document.getElementById('adminOverlay').classList.add('open');
   const dz = document.getElementById('importDrop');
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
@@ -518,8 +557,41 @@ function openImport() {
   });
 }
 
-function closeImport() { document.getElementById('importOverlay').classList.remove('open'); }
-function handleImportOverlayClick(e) { if (e.target === document.getElementById('importOverlay')) closeImport(); }
+function closeAdmin() { document.getElementById('adminOverlay').classList.remove('open'); }
+function handleAdminOverlayClick(e) { if (e.target === document.getElementById('adminOverlay')) closeAdmin(); }
+
+// Keep openImport/closeImport as aliases so confirmImport() still works
+function openImport() { openAdmin(); }
+function closeImport() { closeAdmin(); }
+
+// ── Purge ─────────────────────────────────────────────────
+function startPurge() {
+  document.getElementById('purgeConfirmBox').classList.add('visible');
+  document.getElementById('purgeInput').value = '';
+  document.getElementById('purgeConfirmBtn').disabled = true;
+  setTimeout(() => document.getElementById('purgeInput').focus(), 50);
+}
+
+function onPurgeType() {
+  const val = document.getElementById('purgeInput').value.trim();
+  document.getElementById('purgeConfirmBtn').disabled = (val !== 'PURGE');
+}
+
+function executePurge() {
+  if (document.getElementById('purgeInput').value.trim() !== 'PURGE') return;
+  // Second confirmation
+  const ok = confirm('⚠️ FINAL WARNING
+
+This will permanently delete ALL filament records. There is no undo.
+
+Click OK to wipe the database, or Cancel to abort.');
+  if (!ok) return;
+  items = [];
+  save(items);
+  closeAdmin();
+  renderGrid();
+  toast('Database purged. All records deleted.', 'error');
+}
 
 function handleImportFile(evt) {
   const file = evt.target.files[0];
@@ -658,7 +730,7 @@ function downloadTemplate() {
 
 // ── Keyboard ──────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeImport(); }
+  if (e.key === 'Escape') { closeModal(); closeAdmin(); }
   if ((e.ctrlKey||e.metaKey) && e.key==='Enter') {
     if (document.getElementById('modalOverlay').classList.contains('open')) saveFilament();
   }
