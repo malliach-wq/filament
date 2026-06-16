@@ -580,11 +580,7 @@ function onPurgeType() {
 function executePurge() {
   if (document.getElementById('purgeInput').value.trim() !== 'PURGE') return;
   // Second confirmation
-  const ok = confirm('⚠️ FINAL WARNING
-
-This will permanently delete ALL filament records. There is no undo.
-
-Click OK to wipe the database, or Cancel to abort.');
+  const ok = confirm('⚠️ FINAL WARNING\n\nThis will permanently delete ALL filament records. There is no undo.\n\nClick OK to wipe the database, or Cancel to abort.');
   if (!ok) return;
   items = [];
   save(items);
