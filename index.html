@@ -479,18 +479,18 @@ function cardHTML(f) {
       </div>
       <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${p}%;background:${barColor}"></div></div>
     </div>
-    ${(f.purchaseDate||f.supplier)?`<div class="card-detail">
-      ${f.purchaseDate?`<span>📅 ${fmtDate(f.purchaseDate)}</span>`:''}
-      ${f.supplier?`<span>🏪 ${escHtml(f.supplier)}</span>`:''}
-    </div>`:''}
-    ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
-    <div class="card-footer">
-      ${f.location?`<span>📦 ${escHtml(f.location)}</span>`:'<span></span>'}
-      <div class="card-actions">
+    <div class="card-detail" style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        ${f.purchaseDate?`<span>📅 ${fmtDate(f.purchaseDate)}</span>`:''}
+        ${f.supplier?`<span>🏪 ${escHtml(f.supplier)}</span>`:''}
+        ${f.location?`<span>📦 ${escHtml(f.location)}</span>`:''}
+      </div>
+      <div class="card-actions" style="flex-shrink:0;align-self:flex-end;">
         <button class="icon-btn" onclick="editFilament('${f.id}')" title="Edit">✏️</button>
         <button class="icon-btn delete" onclick="deleteFilament('${f.id}')" title="Delete">🗑️</button>
       </div>
     </div>
+    ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
   </div>`;
 }
 
