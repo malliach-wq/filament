@@ -61,6 +61,7 @@
     .spool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
     .spool-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
     .spool-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--card-color, var(--accent)); }
+    .card-type-row { margin-bottom: 7px; }
     .card-top { display: flex; align-items: flex-start; gap: 12px; }
     .color-swatch { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.12); flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
     .card-info { flex: 1; min-width: 0; }
@@ -462,15 +463,13 @@ function cardHTML(f) {
     ? '<span class="tag refill">Refill</span>'
     : '<span class="tag with-spool">With Spool</span>';
   return `<div class="spool-card" style="--card-color:${col}">
+    <div class="card-type-row"><span class="tag material">${escHtml(f.material)}</span></div>
     <div class="card-top">
       <div class="color-swatch" style="background:${col}" title="${escHtml(f.colorName||col)}"></div>
       <div class="card-info">
         <div class="card-color-name">${escHtml(f.colorName||'Unknown Colour')}</div>
         <div class="card-brand-sub">${escHtml(f.brand||'')}</div>
-        <div class="card-meta">
-          <span class="tag material">${escHtml(f.material)}</span>
-          ${ptag}
-        </div>
+        <div class="card-meta">${ptag}</div>
       </div>
       <div class="card-actions">
         <button class="icon-btn" onclick="editFilament('${f.id}')" title="Edit">✏️</button>
