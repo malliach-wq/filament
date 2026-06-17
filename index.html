@@ -195,6 +195,13 @@
     <select class="filter-select" id="filterMaterial" onchange="renderView()">
       <option value="">All types</option>
     </select>
+    <select class="filter-select" id="generalSort" onchange="setGeneralSort(this.value)" title="Sort by">
+      <option value="material">Sort: Type</option>
+      <option value="colorName">Sort: Colour</option>
+      <option value="remaining">Sort: Remaining</option>
+      <option value="purchaseDate">Sort: Date</option>
+      <option value="brand">Sort: Brand</option>
+    </select>
     <div class="view-toggle">
       <button id="btnCards" class="active" onclick="setView('cards')" title="Card view">⊞</button>
       <button id="btnTable" onclick="setView('table')" title="Table view">☰</button>
@@ -321,6 +328,7 @@ let items = load();
 let editingId = null;
 let pendingImport = [];
 let currentView = 'cards';
+let generalSort = 'material';
 
 // ── Helpers ───────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
@@ -384,6 +392,7 @@ function setView(v) {
   document.getElementById('btnTable').classList.toggle('active', v === 'table');
   renderView();
 }
+function setGeneralSort(v) { generalSort = v; renderView(); }
 function renderView() { currentView === 'table' ? renderTable() : renderCards(); }
 
 // ── Filtered items ────────────────────────────────────────
@@ -397,6 +406,20 @@ function filtered() {
 }
 
 // ── Card view ─────────────────────────────────────────────
+function sortList(arr, key) {
+  return [...arr].sort((a, b) => {
+    let av, bv;
+    if (key === 'remaining') {
+      av = a.remaining != null ? Number(a.remaining) : Number(a.weight)||1000;
+      bv = b.remaining != null ? Number(b.remaining) : Number(b.weight)||1000;
+      return bv - av; // most remaining first
+    }
+    av = String(a[key]??'').toLowerCase();
+    bv = String(b[key]??'').toLowerCase();
+    return av < bv ? -1 : av > bv ? 1 : 0;
+  });
+}
+
 function renderCards() {
   renderStats(); updateMaterialFilter();
   const list = filtered();
@@ -405,19 +428,28 @@ function renderCards() {
     main.innerHTML = `<div class="empty-state"><div class="big-icon">🧵</div><h2>${items.length===0?'No filaments yet':'No matches'}</h2><p>${items.length===0?'Add your first filament to get started.':'Try adjusting your search or filter.'}</p>${items.length===0?'<button class="btn btn-primary" onclick="openModal()">＋ Add Filament</button>':''}</div>`;
     return;
   }
-  // Group by material
-  const groups = {};
-  for (const f of list) { (groups[f.material] = groups[f.material]||[]).push(f); }
-  const matOrder = [...new Set(items.map(f=>f.material))]; // preserve insertion order
-  const sorted = Object.keys(groups).sort((a,b) => matOrder.indexOf(a) - matOrder.indexOf(b));
 
-  main.innerHTML = sorted.map(mat => {
-    const gItems = groups[mat];
-    return `<div class="material-group">
-      <div class="group-header">${escHtml(mat)} <span class="group-count">${gItems.length}</span></div>
-      <div class="grid">${gItems.map(cardHTML).join('')}</div>
+  if (generalSort === 'material') {
+    // Group by material, sort within each group by colour name
+    const groups = {};
+    for (const f of list) { (groups[f.material] = groups[f.material]||[]).push(f); }
+    const mats = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+    main.innerHTML = mats.map(mat => {
+      const gItems = sortList(groups[mat], 'colorName');
+      return `<div class="material-group">
+        <div class="group-header">${escHtml(mat)} <span class="group-count">${gItems.length}</span></div>
+        <div class="grid">${gItems.map(cardHTML).join('')}</div>
+      </div>`;
+    }).join('');
+  } else {
+    // Flat sorted list — single group with sort label
+    const sorted = sortList(list, generalSort);
+    const labelMap = {colorName:'Colour',remaining:'Remaining',purchaseDate:'Date Purchased',brand:'Brand'};
+    main.innerHTML = `<div class="material-group">
+      <div class="group-header">All filaments — sorted by ${labelMap[generalSort]||generalSort} <span class="group-count">${sorted.length}</span></div>
+      <div class="grid">${sorted.map(cardHTML).join('')}</div>
     </div>`;
-  }).join('');
+  }
 }
 
 function cardHTML(f) {
@@ -715,15 +747,9 @@ function parseImportRows(rows) {
 
 function confirmImport() {
   if (!pendingImport.length) return;
-  const existing = new Set(items.map(f => f.brand+'|'+f.material+'|'+f.colorName));
-  let added = 0, skipped = 0;
-  for (const f of pendingImport) {
-    const key = f.brand+'|'+f.material+'|'+f.colorName;
-    if (existing.has(key)) { skipped++; continue; }
-    items.unshift(f); existing.add(key); added++;
-  }
+  for (const f of pendingImport) items.push(f);
   save(items); closeAdmin(); renderView();
-  toast(`Imported ${added} filament${added!==1?'s':''}${skipped?` (${skipped} skipped)`:''}. 🧵`);
+  toast(`Imported ${pendingImport.length} filament${pendingImport.length!==1?'s':''}. 🧵`);
 }
 
 // ── Template download ─────────────────────────────────────
