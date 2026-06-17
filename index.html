@@ -456,7 +456,7 @@ function cardHTML(f) {
   const rem = f.remaining != null ? Number(f.remaining) : Number(f.weight)||1000;
   const wt = Number(f.weight)||1000;
   const p = pct(rem, wt);
-  const bc = barClass(p);
+  const barColor = `hsl(${p * 2.2}, 78%, 55%)`;
   const col = displayColor(f);
   const ptag = f.purchaseType === 'refill'
     ? '<span class="tag refill">Refill</span>'
@@ -466,11 +466,11 @@ function cardHTML(f) {
       <div class="color-swatch" style="background:${col}" title="${escHtml(f.colorName||col)}"></div>
       <div class="card-info">
         <div class="card-color-name">${escHtml(f.colorName||'Unknown Colour')}</div>
+        <div class="card-brand-sub">${escHtml(f.brand||'')}</div>
         <div class="card-meta">
           <span class="tag material">${escHtml(f.material)}</span>
           ${ptag}
         </div>
-        <div class="card-brand-sub">${escHtml(f.brand||'')}</div>
       </div>
       <div class="card-actions">
         <button class="icon-btn" onclick="editFilament('${f.id}')" title="Edit">✏️</button>
@@ -482,17 +482,14 @@ function cardHTML(f) {
         <span class="remaining">~${rem}g remaining</span>
         <span>${p}% of ${wt}g</span>
       </div>
-      <div class="weight-bar-bg"><div class="weight-bar-fill ${bc}" style="width:${p}%"></div></div>
+      <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${p}%;background:${barColor}"></div></div>
     </div>
     ${(f.purchaseDate||f.supplier)?`<div class="card-detail">
       ${f.purchaseDate?`<span>📅 ${fmtDate(f.purchaseDate)}</span>`:''}
       ${f.supplier?`<span>🏪 ${escHtml(f.supplier)}</span>`:''}
     </div>`:''}
     ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
-    <div class="card-footer">
-      ${f.location?`<span>📦 ${escHtml(f.location)}</span>`:'<span></span>'}
-      <span>${p<=25?'⚠️ Running low':p>=90?'✅ Full':''}</span>
-    </div>
+    ${f.location?`<div class="card-footer"><span>📦 ${escHtml(f.location)}</span></div>`:''}
   </div>`;
 }
 
@@ -533,7 +530,7 @@ function renderTable() {
         <td>${escHtml(f.material)}</td>
         <td>${f.purchaseType==='refill'?'Refill':'With Spool'}</td>
         <td>${escHtml(f.brand||'—')}</td>
-        <td><span class="t-bar"><span class="t-bar-fill ${barClass(p)}" style="width:${p}%"></span></span>${rem}g</td>
+        <td><span class="t-bar"><span class="t-bar-fill" style="width:${p}%;background:hsl(${p*2.2},78%,55%)"></span></span>${rem}g</td>
         <td>${wt}g</td>
         <td>${p}%</td>
         <td>${fmtDate(f.purchaseDate)||'—'}</td>
