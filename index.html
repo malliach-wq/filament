@@ -471,10 +471,6 @@ function cardHTML(f) {
         <div class="card-brand-sub">${escHtml(f.brand||'')}</div>
         <div class="card-meta">${ptag}</div>
       </div>
-      <div class="card-actions">
-        <button class="icon-btn" onclick="editFilament('${f.id}')" title="Edit">✏️</button>
-        <button class="icon-btn delete" onclick="deleteFilament('${f.id}')" title="Delete">🗑️</button>
-      </div>
     </div>
     <div class="weight-section">
       <div class="weight-labels">
@@ -488,7 +484,13 @@ function cardHTML(f) {
       ${f.supplier?`<span>🏪 ${escHtml(f.supplier)}</span>`:''}
     </div>`:''}
     ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
-    ${f.location?`<div class="card-footer"><span>📦 ${escHtml(f.location)}</span></div>`:''}
+    <div class="card-footer">
+      ${f.location?`<span>📦 ${escHtml(f.location)}</span>`:'<span></span>'}
+      <div class="card-actions">
+        <button class="icon-btn" onclick="editFilament('${f.id}')" title="Edit">✏️</button>
+        <button class="icon-btn delete" onclick="deleteFilament('${f.id}')" title="Delete">🗑️</button>
+      </div>
+    </div>
   </div>`;
 }
 
