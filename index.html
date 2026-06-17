@@ -81,10 +81,8 @@
     .weight-section { display: flex; flex-direction: column; gap: 5px; }
     .weight-labels { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); }
     .weight-labels .remaining { font-weight: 700; color: var(--text); font-size: 0.88rem; }
-    .weight-bar-bg { height: 7px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
-    .weight-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; background: linear-gradient(90deg, var(--accent), var(--success)); }
-    .weight-bar-fill.low { background: linear-gradient(90deg, var(--danger), var(--warning)); }
-    .weight-bar-fill.medium { background: linear-gradient(90deg, var(--warning), var(--success)); }
+    .weight-bar-bg { height: 7px; background: linear-gradient(to right, #1e88e5, #e53935); border-radius: 99px; overflow: hidden; position: relative; }
+    .weight-bar-unfill { position: absolute; right: 0; top: 0; bottom: 0; background: var(--surface2); border-radius: 0 99px 99px 0; transition: width 0.4s ease; }
 
     .card-detail { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
     .card-detail span { display: flex; gap: 5px; }
@@ -457,7 +455,6 @@ function cardHTML(f) {
   const rem = f.remaining != null ? Number(f.remaining) : Number(f.weight)||1000;
   const wt = Number(f.weight)||1000;
   const p = pct(rem, wt);
-  const barColor = `hsl(${p * 2.2}, 78%, 55%)`;
   const col = displayColor(f);
   const ptag = f.purchaseType === 'refill'
     ? '<span class="tag refill">Refill</span>'
@@ -477,7 +474,7 @@ function cardHTML(f) {
         <span class="remaining">~${rem}g remaining</span>
         <span>${p}% of ${wt}g</span>
       </div>
-      <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${p}%;background:${barColor}"></div></div>
+      <div class="weight-bar-bg"><div class="weight-bar-unfill" style="width:${100-p}%"></div></div>
     </div>
     ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
     <div class="card-detail">
@@ -531,7 +528,7 @@ function renderTable() {
         <td>${escHtml(f.material)}</td>
         <td>${f.purchaseType==='refill'?'Refill':'With Spool'}</td>
         <td>${escHtml(f.brand||'—')}</td>
-        <td><span class="t-bar"><span class="t-bar-fill" style="width:${p}%;background:hsl(${p*2.2},78%,55%)"></span></span>${rem}g</td>
+        <td><span class="t-bar" style="background:linear-gradient(to right,#1e88e5,#e53935);position:relative;"><span style="position:absolute;right:0;top:0;bottom:0;width:${100-p}%;background:var(--surface2);border-radius:0 99px 99px 0"></span></span>${rem}g</td>
         <td>${wt}g</td>
         <td>${p}%</td>
         <td>${fmtDate(f.purchaseDate)||'—'}</td>
