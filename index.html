@@ -479,18 +479,18 @@ function cardHTML(f) {
       </div>
       <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${p}%;background:${barColor}"></div></div>
     </div>
-    <div class="card-detail" style="display:flex;align-items:center;justify-content:space-between;">
-      <div style="display:flex;flex-direction:column;gap:2px;">
+    ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:4px;">
+      <div class="card-detail" style="margin:0;flex:1;">
         ${f.purchaseDate?`<span>📅 ${fmtDate(f.purchaseDate)}</span>`:''}
         ${f.supplier?`<span>🏪 ${escHtml(f.supplier)}</span>`:''}
         ${f.location?`<span>📦 ${escHtml(f.location)}</span>`:''}
       </div>
-      <div class="card-actions" style="flex-shrink:0;align-self:flex-end;">
+      <div class="card-actions" style="flex-shrink:0;">
         <button class="icon-btn" onclick="editFilament('${f.id}')" title="Edit">✏️</button>
         <button class="icon-btn delete" onclick="deleteFilament('${f.id}')" title="Delete">🗑️</button>
       </div>
     </div>
-    ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
   </div>`;
 }
 
