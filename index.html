@@ -190,13 +190,18 @@
       <input type="text" id="search" placeholder="Search…" oninput="renderView()" />
     </div>
     <select class="filter-select" id="filterMaterial" onchange="renderView()">
-      <option value="">All types</option>
+      <option value="">Filament Type</option>
+    </select>
+    <select class="filter-select" id="availFilter" onchange="renderView()" title="Availability">
+      <option value="">All Filament</option>
+      <option value="available">Available</option>
+      <option value="finished">Finished</option>
     </select>
     <select class="filter-select" id="generalSort" onchange="setGeneralSort(this.value)" title="Sort by">
       <option value="material">Sort: Type</option>
       <option value="colorName">Sort: Colour</option>
       <option value="remaining">Sort: Remaining</option>
-      <option value="purchaseDate">Sort: Date</option>
+      <option value="purchaseDate">Sort: Purchase Date</option>
       <option value="brand">Sort: Brand</option>
     </select>
     <div class="view-toggle">
@@ -379,7 +384,7 @@ function updateMaterialFilter() {
   const sel = document.getElementById('filterMaterial');
   const cur = sel.value;
   const mats = [...new Set(items.map(f => f.material))].sort();
-  sel.innerHTML = '<option value="">All types</option>' + mats.map(m => `<option value="${escHtml(m)}" ${m===cur?'selected':''}>${escHtml(m)}</option>`).join('');
+  sel.innerHTML = '<option value="">Filament Type</option>' + mats.map(m => `<option value="${escHtml(m)}" ${m===cur?'selected':''}>${escHtml(m)}</option>`).join('');
 }
 
 // ── View toggle ───────────────────────────────────────────
@@ -396,9 +401,13 @@ function renderView() { currentView === 'table' ? renderTable() : renderCards();
 function filtered() {
   const q = document.getElementById('search').value.toLowerCase();
   const mf = document.getElementById('filterMaterial').value;
+  const av = document.getElementById('availFilter').value;
   return items.filter(f => {
     const hay = [f.brand,f.material,f.colorName,f.supplier,f.location,f.notes].join(' ').toLowerCase();
-    return (!q || hay.includes(q)) && (!mf || f.material === mf);
+    const rem = f.remaining != null ? Number(f.remaining) : Number(f.weight)||1000;
+    const isFinished = rem <= 0;
+    const availOk = !av || (av === 'available' ? !isFinished : isFinished);
+    return (!q || hay.includes(q)) && (!mf || f.material === mf) && availOk;
   });
 }
 
