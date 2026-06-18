@@ -504,10 +504,10 @@ function cardHTML(f) {
       <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${p}%;background:hsl(${p*2.2},80%,52%)"></div></div>
     </div>
     ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
-    ${(f.cost!=null)?`<div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:4px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:2px 0;">
-      <span style="color:var(--text-muted)">Spool Cost: <span style="color:var(--text);font-weight:600">${f.cost.toFixed(2)}</span></span>
-      <span style="color:var(--text-muted)">Cost/gr: <span style="color:var(--text);font-weight:600">${(f.cost/(f.weight||1000)).toFixed(4)}</span></span>
-    </div>`:''}
+    <div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:4px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:2px 0;">
+      <span style="color:var(--text-muted)">Spool Cost: <span style="color:var(--text);font-weight:600">${f.cost!=null?f.cost.toFixed(2):'n/a'}</span></span>
+      <span style="color:var(--text-muted)">Cost/gr: <span style="color:var(--text);font-weight:600">${f.cost!=null?(f.cost/(f.weight||1000)).toFixed(4):'n/a'}</span></span>
+    </div>
     <div class="card-detail">
       <span style="display:flex;align-items:center;justify-content:space-between;">
         <span>${f.purchaseDate?`📅 ${fmtDate(f.purchaseDate)}`:''}</span>
