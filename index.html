@@ -262,6 +262,7 @@
         <div class="field"><label>Weight (g)</label><input type="number" id="fWeight" placeholder="1000" min="1" step="1" value="1000" /></div>
         <div class="field"><label>Approx. Remaining (g)</label><input type="number" id="fRemaining" placeholder="Leave blank = full" min="0" step="1" /></div>
       </div>
+      <div class="field" style="max-width:50%"><label>Spool Cost</label><input type="number" id="fCost" placeholder="e.g. 19.99" min="0" step="0.01" /></div>
       <div class="field"><label>Storage Location</label><input type="text" id="fLocation" placeholder="e.g. Shelf A, Dry box 2" /></div>
       <div class="field"><label>Notes</label><textarea id="fNotes" placeholder="Drying status, print settings…"></textarea></div>
     </div>
@@ -503,6 +504,10 @@ function cardHTML(f) {
       <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${p}%;background:hsl(${p*2.2},80%,52%)"></div></div>
     </div>
     ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
+    ${(f.cost!=null)?`<div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:4px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:2px 0;">
+      <span style="color:var(--text-muted)">Spool Cost: <span style="color:var(--text);font-weight:600">${f.cost.toFixed(2)}</span></span>
+      <span style="color:var(--text-muted)">Cost/gr: <span style="color:var(--text);font-weight:600">${(f.cost/(f.weight||1000)).toFixed(4)}</span></span>
+    </div>`:''}
     <div class="card-detail">
       <span style="display:flex;align-items:center;justify-content:space-between;">
         <span>${f.purchaseDate?`📅 ${fmtDate(f.purchaseDate)}`:''}</span>
@@ -528,7 +533,7 @@ function renderTable() {
   const cols = [
     {k:'colorName',l:'Colour'},{k:'material',l:'Type'},{k:'purchaseType',l:'Spool'},
     {k:'brand',l:'Brand'},{k:'remaining',l:'Remaining'},{k:'weight',l:'Weight'},
-    {k:'pct',l:'%'},{k:'purchaseDate',l:'Purchased'},{k:'supplier',l:'Supplier'},
+    {k:'pct',l:'%'},{k:'cost',l:'Cost'},{k:'purchaseDate',l:'Purchased'},{k:'supplier',l:'Supplier'},
     {k:'location',l:'Location'},{k:'notes',l:'Notes'}
   ];
   let sorted = [...list];
@@ -593,6 +598,7 @@ function openModal(f = null) {
   document.getElementById('fRemaining').value    = f?.remaining    ?? '';
   document.getElementById('fLocation').value     = f?.location     ?? '';
   document.getElementById('fNotes').value        = f?.notes        ?? '';
+  document.getElementById('fCost').value         = f?.cost ?? '';
   document.getElementById('modalOverlay').classList.add('open');
   setTimeout(() => document.getElementById('fBrand').focus(), 50);
 }
@@ -620,9 +626,11 @@ function saveFilament() {
   const remaining    = remRaw === '' ? null : parseFloat(remRaw);
   const location     = document.getElementById('fLocation').value.trim();
   const notes        = document.getElementById('fNotes').value.trim();
+  const costRaw      = document.getElementById('fCost').value;
+  const cost         = costRaw === '' ? null : parseFloat(costRaw);
   if (!brand) { toast('Please enter a brand name.', 'error'); return; }
   if (isNaN(weight) || weight <= 0) { toast('Enter a valid weight.', 'error'); return; }
-  const data = { brand, material, purchaseType, purchaseDate, supplier, color, colorName, weight, remaining, location, notes };
+  const data = { brand, material, purchaseType, purchaseDate, supplier, color, colorName, weight, remaining, cost, location, notes };
   if (editingId) {
     const idx = items.findIndex(f => f.id === editingId);
     if (idx !== -1) { items[idx] = { ...items[idx], ...data }; toast('Filament updated! ✅'); }
@@ -703,7 +711,8 @@ const COL_MAP = {
   supplier:     ['supplier','vendor','store','source'],
   purchaseDate: ['date of purchase','purchase date','date','bought'],
   location:     ['location','storage','storage location','shelf'],
-  notes:        ['notes','note','comments','comment']
+  notes:        ['notes','note','comments','comment'],
+  cost:         ['cost','price','spool cost','spool price','cost (£)','price (£)','cost ($)']
 };
 
 function parseImportRows(rows) {
@@ -740,7 +749,8 @@ function parseImportRows(rows) {
       supplier: get('supplier'),
       purchaseDate,
       location: get('location'),
-      notes: get('notes')
+      notes: get('notes'),
+      cost: get('cost') ? parseFloat(get('cost')) || null : null
     };
   });
 
@@ -776,9 +786,9 @@ function confirmImport() {
 // ── Template download ─────────────────────────────────────
 function downloadTemplate() {
   if (typeof XLSX === 'undefined') { toast('SheetJS not loaded yet.', 'error'); return; }
-  const headers = ['Brand','Material','Purchase Type','Date of Purchase','Supplier','Colour Name','Colour Hex','Weight (g)','Approx. Remaining (g)','Storage Location','Notes'];
-  const example = ['Bambu Lab','PLA Basic','With Spool','2024-01-15','Bambu Lab Store','Jade Green','#4CAF50','1000','850','Shelf A','Standard PLA'];
-  const example2 = ['eSUN','PLA+','Y','2024-02-01','Amazon','Red','','1000','','','Leave Remaining blank = assume full'];
+  const headers = ['Brand','Material','Purchase Type','Date of Purchase','Supplier','Colour Name','Colour Hex','Weight (g)','Approx. Remaining (g)','Spool Cost','Storage Location','Notes'];
+  const example = ['Bambu Lab','PLA Basic','With Spool','2024-01-15','Bambu Lab Store','Jade Green','#4CAF50','1000','850','24.99','Shelf A','Standard PLA'];
+  const example2 = ['eSUN','PLA+','Y','2024-02-01','Amazon','Red','','1000','','19.99','','Leave Remaining blank = assume full'];
   const ws = XLSX.utils.aoa_to_sheet([headers, example, example2]);
   ws['!cols'] = headers.map(h => ({ wch: Math.max(h.length+4, 16) }));
   const wb = XLSX.utils.book_new();
