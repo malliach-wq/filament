@@ -81,8 +81,8 @@
     .weight-section { display: flex; flex-direction: column; gap: 5px; }
     .weight-labels { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); }
     .weight-labels .remaining { font-weight: 700; color: var(--text); font-size: 0.88rem; }
-    .weight-bar-bg { height: 7px; background: linear-gradient(to right, #e53935, #1e88e5); border-radius: 99px; overflow: hidden; position: relative; }
-    .weight-bar-unfill { position: absolute; right: 0; top: 0; bottom: 0; background: var(--surface2); border-radius: 0 99px 99px 0; transition: width 0.4s ease; }
+    .weight-bar-bg { height: 7px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+    .weight-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease, background 0.4s ease; }
 
     .card-detail { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
     .card-detail span { display: flex; gap: 5px; }
@@ -99,9 +99,7 @@
     table.inv tr:last-child td { border-bottom: none; }
     .t-swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,0.15); vertical-align: middle; margin-right: 5px; }
     .t-bar { width: 80px; height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 5px; }
-    .t-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--success)); }
-    .t-bar-fill.low { background: linear-gradient(90deg, var(--danger), var(--warning)); }
-    .t-bar-fill.medium { background: linear-gradient(90deg, var(--warning), var(--success)); }
+    .t-bar-fill { height: 100%; border-radius: 99px; }
 
     /* Empty */
     .empty-state { text-align: center; padding: 70px 20px; color: var(--text-muted); }
@@ -474,7 +472,7 @@ function cardHTML(f) {
         <span class="remaining">~${rem}g remaining</span>
         <span>${p}% of ${wt}g</span>
       </div>
-      <div class="weight-bar-bg"><div class="weight-bar-unfill" style="width:${100-p}%"></div></div>
+      <div class="weight-bar-bg"><div class="weight-bar-fill" style="width:${p}%;background:hsl(${p*2.2},80%,52%)"></div></div>
     </div>
     ${f.notes?`<div class="spool-note">${escHtml(f.notes)}</div>`:''}
     <div class="card-detail">
@@ -528,7 +526,7 @@ function renderTable() {
         <td>${escHtml(f.material)}</td>
         <td>${f.purchaseType==='refill'?'Refill':'With Spool'}</td>
         <td>${escHtml(f.brand||'—')}</td>
-        <td><span class="t-bar" style="background:linear-gradient(to right,#1e88e5,#e53935);position:relative;"><span style="position:absolute;right:0;top:0;bottom:0;width:${100-p}%;background:var(--surface2);border-radius:0 99px 99px 0"></span></span>${rem}g</td>
+        <td><span class="t-bar"><span class="t-bar-fill" style="width:${p}%;background:hsl(${p*2.2},80%,52%)"></span></span>${rem}g</td>
         <td>${wt}g</td>
         <td>${p}%</td>
         <td>${fmtDate(f.purchaseDate)||'—'}</td>
