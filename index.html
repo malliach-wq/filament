@@ -449,23 +449,42 @@ function renderCards() {
   }
 }
 
+function spoolIcon(hasSpool) {
+  const cross = hasSpool ? '' : `
+    <circle cx="20" cy="20" r="18.5" fill="none" stroke="#e53935" stroke-width="2.5"/>
+    <line x1="7" y1="33" x2="33" y2="7" stroke="#e53935" stroke-width="2.5" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 40 40" width="38" height="38" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;opacity:${hasSpool?'1':'0.5'}">
+    <circle cx="20" cy="20" r="19" fill="#d8d8d8" stroke="#b8b8b8" stroke-width="0.5"/>
+    <circle cx="20" cy="20" r="15" fill="#c8c8c8"/>
+    <circle cx="20" cy="20" r="9.5" fill="#b4b4b4"/>
+    <circle cx="20" cy="20" r="6" fill="#666"/>
+    <circle cx="20" cy="20" r="4" fill="#333"/>
+    <circle cx="20" cy="8"  r="1.1" fill="#aaa" opacity="0.7"/>
+    <circle cx="20" cy="32" r="1.1" fill="#aaa" opacity="0.7"/>
+    <circle cx="8"  cy="20" r="1.1" fill="#aaa" opacity="0.7"/>
+    <circle cx="32" cy="20" r="1.1" fill="#aaa" opacity="0.7"/>
+    <circle cx="11" cy="11" r="1"   fill="#aaa" opacity="0.5"/>
+    <circle cx="29" cy="11" r="1"   fill="#aaa" opacity="0.5"/>
+    <circle cx="11" cy="29" r="1"   fill="#aaa" opacity="0.5"/>
+    <circle cx="29" cy="29" r="1"   fill="#aaa" opacity="0.5"/>
+    ${cross}
+  </svg>`;
+}
+
 function cardHTML(f) {
   const rem = f.remaining != null ? Number(f.remaining) : Number(f.weight)||1000;
   const wt = Number(f.weight)||1000;
   const p = pct(rem, wt);
   const col = displayColor(f);
-  const ptag = f.purchaseType === 'refill'
-    ? '<span class="tag refill">Refill</span>'
-    : '<span class="tag with-spool">With Spool</span>';
   return `<div class="spool-card" style="--card-color:${col}">
     <div class="card-type-row"><span class="tag material">${escHtml(f.material)}</span></div>
-    <div class="card-top">
+    <div class="card-top" style="align-items:center;">
       <div class="color-swatch" style="background:${col}" title="${escHtml(f.colorName||col)}"></div>
-      <div class="card-info">
+      <div class="card-info" style="flex:1;min-width:0;">
         <div class="card-color-name">${escHtml(f.colorName||'Unknown Colour')}</div>
         <div class="card-brand-sub">${escHtml(f.brand||'')}</div>
-        <div class="card-meta">${ptag}</div>
       </div>
+      ${spoolIcon(f.purchaseType !== 'refill')}
     </div>
     <div class="weight-section">
       <div class="weight-labels">
